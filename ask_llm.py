@@ -77,7 +77,7 @@ if __name__ == '__main__':
                     sql = " ".join(sql.replace("\n", " ").split())
                     sql = process_duplication(sql)
                     # python version should >= 3.8
-                    if sql.startswith("SELECT"):
+                    if sql.upper().startswith(("SELECT", "WITH")):
                         f.write(sql + "\n")
                     elif sql.startswith(" "):
                         f.write("SELECT" + sql + "\n")
@@ -91,7 +91,7 @@ if __name__ == '__main__':
                     for sql in sqls:
                         sql = " ".join(sql.replace("\n", " ").split())
                         sql = process_duplication(sql)
-                        if sql.startswith("SELECT"):
+                        if sql.upper().startswith(("SELECT", "WITH")):
                             pass
                         elif sql.startswith(" "):
                             sql = "SELECT" + sql

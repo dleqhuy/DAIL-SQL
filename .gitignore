@@ -1,2 +1,10 @@
 .idea
 .DS_Store
+# Local experiment runtimes and model caches
+.venv/
+.cache/
+third_party/
+vector_cache/
+/dataset/
+__pycache__/
+*.py[cod]

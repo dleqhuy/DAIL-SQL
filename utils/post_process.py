@@ -14,6 +14,11 @@ import tqdm
 
 # process the case of duplicated output of ChatGPT and GPT4 for SQL Representation with QA or SQLONLY Organization
 def process_duplication(sql):
+    sql = sql.strip()
+    fence = re.search(r"```(?:sql)?\s*(.*?)```", sql, re.I | re.S)
+    if fence:
+        sql = fence.group(1).strip()
+    sql = re.sub(r"^SQL\s*:\s*", "", sql, flags=re.I)
     sql = sql.strip().split("/*")[0]
     return sql
 

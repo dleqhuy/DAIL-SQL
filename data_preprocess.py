@@ -13,7 +13,7 @@ from utils.datasets.spider import load_tables
 # from dataset.process.preprocess_kaggle import gather_questions
 
 
-def schema_linking_producer(test, train, table, db, dataset_dir, compute_cv_link=True):
+def schema_linking_producer(test, train, table, db, dataset_dir, compute_cv_link=True, tokenize_only=False):
 
     # load data
     test_data = json.load(open(os.path.join(dataset_dir, test)))
@@ -32,7 +32,7 @@ def schema_linking_producer(test, train, table, db, dataset_dir, compute_cv_link
             source.backup(dest)
         schema.connection = dest
 
-    word_emb = GloVe(kind='42B', lemmatize=True)
+    word_emb = GloVe(kind='42B', lemmatize=True, load_vectors=not tokenize_only)
     linking_processor = SpiderEncoderV2Preproc(dataset_dir,
             min_freq=4,
             max_count=5000,
@@ -107,6 +107,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_dir", type=str, default="./dataset/spider")
     parser.add_argument("--data_type", type=str, choices=["spider", "bird"], default="spider")
+    parser.add_argument("--tokenize-only", action="store_true",
+                        help="Skip unused GloVe vectors; keep identical CoreNLP tokenization")
     args = parser.parse_args()
 
     data_type = args.data_type
@@ -128,7 +130,7 @@ if __name__ == '__main__':
         spider_train = 'train_spider_and_others.json'
         spider_table = 'tables.json'
         spider_db = 'database'
-        schema_linking_producer(spider_dev, spider_train, spider_table, spider_db, spider_dir)
+        schema_linking_producer(spider_dev, spider_train, spider_table, spider_db, spider_dir, tokenize_only=args.tokenize_only)
     elif data_type == "bird":
         # schema-linking for bird with evidence
         bird_dir = './dataset/bird'

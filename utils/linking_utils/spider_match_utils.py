@@ -1,6 +1,8 @@
 import re
 import string
 import collections
+import functools
+import os
 
 import nltk.corpus
 
@@ -81,42 +83,45 @@ def compute_schema_linking(question, column, table):
     return {"q_col_match": q_col_match, "q_tab_match": q_tab_match}
 
 
+@functools.lru_cache(maxsize=100000 if os.getenv("DAIL_CACHE_CELL_MATCHES") == "1" else 0)
+def db_word_partial_match(word, column, table, db_conn):
+    cursor = db_conn.cursor()
+
+    p_str = f"select {column} from {table} where {column} like '{word} %' or {column} like '% {word}' or " \
+            f"{column} like '% {word} %' or {column} like '{word}'"
+    try:
+        cursor.execute(p_str)
+        p_res = cursor.fetchone()
+        if p_res is None:
+            return False
+        else:
+            return True
+    except Exception as e:
+        return False
+
+@functools.lru_cache(maxsize=100000 if os.getenv("DAIL_CACHE_CELL_MATCHES") == "1" else 0)
+def db_word_exact_match(word, column, table, db_conn):
+    cursor = db_conn.cursor()
+
+    p_str = f"select {column} from {table} where {column} like '{word}' or {column} like ' {word}' or " \
+            f"{column} like '{word} ' or {column} like ' {word} '"
+    try:
+        cursor.execute(p_str)
+        p_res = cursor.fetchone()
+        if p_res is None:
+            return False
+        else:
+            return True
+    except Exception as e:
+        return False
+
+
 def compute_cell_value_linking(tokens, schema):
     def isnumber(word):
         try:
             float(word)
             return True
         except:
-            return False
-
-    def db_word_partial_match(word, column, table, db_conn):
-        cursor = db_conn.cursor()
-
-        p_str = f"select {column} from {table} where {column} like '{word} %' or {column} like '% {word}' or " \
-                f"{column} like '% {word} %' or {column} like '{word}'"
-        try:
-            cursor.execute(p_str)
-            p_res = cursor.fetchall()
-            if len(p_res) == 0:
-                return False
-            else:
-                return p_res
-        except Exception as e:
-            return False
-
-    def db_word_exact_match(word, column, table, db_conn):
-        cursor = db_conn.cursor()
-
-        p_str = f"select {column} from {table} where {column} like '{word}' or {column} like ' {word}' or " \
-                f"{column} like '{word} ' or {column} like ' {word} '"
-        try:
-            cursor.execute(p_str)
-            p_res = cursor.fetchall()
-            if len(p_res) == 0:
-                return False
-            else:
-                return p_res
-        except Exception as e:
             return False
 
     num_date_match = {}
