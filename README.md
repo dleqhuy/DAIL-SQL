@@ -78,6 +78,21 @@ python generate_question.py \
 ```
 
 ### Calling the LLM
+For an OpenAI-compatible provider, set these environment variables (the API key is
+not stored in the repository):
+```bash
+pip install 'openai>=0.27,<1'
+export LLM_BASE_URL=http://localhost:20128/v1
+export LLM_API_KEY='your-provider-api-key'
+export LLM_MODEL=cx/gpt-6-luna
+python ask_llm.py --question [prompt_dir] --n 1
+```
+`--question` points to a directory containing the generated `questions.json`.
+`--model` and `--openai_api_key` override the environment defaults. Custom models
+use the chat completions API with batch size 1. For self-consistency voting, use
+`--n 5` if your provider supports multiple choices. The repository uses the OpenAI
+0.x SDK; keep the version constraint in `requirements.txt`.
+
 Without voting:
 ```
 python ask_llm.py \

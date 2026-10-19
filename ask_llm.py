@@ -17,15 +17,9 @@ QUESTION_FILE = "questions.json"
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--question", type=str)
-    parser.add_argument("--openai_api_key", type=str)
-    parser.add_argument("--openai_group_id", type=str, default="org-ktBefi7n9aK7sZjwc2R9G1Wo")
-    parser.add_argument("--model", type=str, choices=[LLM.TEXT_DAVINCI_003, 
-                                                      LLM.GPT_35_TURBO,
-                                                      LLM.GPT_35_TURBO_0613,
-                                                      # LLM.TONG_YI_QIAN_WEN,
-                                                      LLM.GPT_35_TURBO_16K,
-                                                      LLM.GPT_4],
-                        default=LLM.GPT_35_TURBO)
+    parser.add_argument("--openai_api_key", type=str, default=os.getenv("LLM_API_KEY"))
+    parser.add_argument("--openai_group_id", type=str, default=None)
+    parser.add_argument("--model", type=str, default=os.getenv("LLM_MODEL", LLM.GPT_35_TURBO))
     parser.add_argument("--start_index", type=int, default=0)
     parser.add_argument("--end_index", type=int, default=1000000)
     parser.add_argument("--temperature", type=float, default=0)
@@ -52,12 +46,13 @@ if __name__ == '__main__':
     else:
         mode = "a"
 
+    model_filename = args.model.replace("/", "_").replace("\\", "_")
     if args.mini_index_path:
         mini_index = json.load(open(args.mini_index_path, 'r'))
         questions = [questions[i] for i in mini_index]
-        out_file = f"{args.question}/RESULTS_MODEL-{args.model}_MINI.txt"
+        out_file = f"{args.question}/RESULTS_MODEL-{model_filename}_MINI.txt"
     else:
-        out_file = f"{args.question}/RESULTS_MODEL-{args.model}.txt"
+        out_file = f"{args.question}/RESULTS_MODEL-{model_filename}.txt"
 
     question_loader = DataLoader(questions, batch_size=args.batch_size, shuffle=False, drop_last=False)
 

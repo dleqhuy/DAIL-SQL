@@ -1,4 +1,5 @@
 import json.decoder
+import os
 
 import openai
 from utils.enums import LLM
@@ -6,14 +7,9 @@ import time
 
 
 def init_chatgpt(OPENAI_API_KEY, OPENAI_GROUP_ID, model):
-    # if model == LLM.TONG_YI_QIAN_WEN:
-    #     import dashscope
-    #     dashscope.api_key = OPENAI_API_KEY
-    # else:
-    #     openai.api_key = OPENAI_API_KEY
-    #     openai.organization = OPENAI_GROUP_ID
-    openai.api_key = OPENAI_API_KEY
+    openai.api_key = OPENAI_API_KEY or os.getenv("LLM_API_KEY")
     openai.organization = OPENAI_GROUP_ID
+    openai.api_base = os.getenv("LLM_BASE_URL", "https://api.openai.com/v1")
 
 
 def ask_completion(model, batch, temperature):
@@ -59,7 +55,7 @@ def ask_llm(model: str, batch: list, temperature: float, n:int):
                 # TODO: self-consistency in this mode
                 assert n == 1
                 response = ask_completion(model, batch, temperature)
-            elif model in LLM.TASK_CHAT:
+            else:
                 # batch size must be 1
                 assert len(batch) == 1, "batch must be 1 in this mode"
                 messages = [{"role": "user", "content": batch[0]}]
