@@ -293,8 +293,12 @@ def sql_normalization(sql):
         new_s = []
         for i in range(len(s)):
             if s[i] == "as":
+                # CTE definitions use AS (, not AS <alias>. Keep both tokens
+                # so normalization does not remove the opening parenthesis.
+                if i + 1 < len(s) and s[i+1] == "(":
+                    new_s.append(s[i])
                 continue
-            if i > 0 and s[i-1] == "as":
+            if i > 0 and s[i-1] == "as" and s[i] != "(":
                 continue
             new_s.append(s[i])
         new_s = ' '.join(new_s)
