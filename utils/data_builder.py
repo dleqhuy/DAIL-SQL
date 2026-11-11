@@ -1,6 +1,7 @@
 import json
 import os
 
+from prompt.prepared_train import prepared_train
 from utils.utils import get_tables, sql2skeleton
 from utils.linking_utils.application import get_question_pattern_with_schema_linking
 
@@ -93,6 +94,9 @@ class BasicDataset(object):
 
     # get all train information
     def get_train_json(self):
+        return prepared_train(self, self._build_train_json)
+
+    def _build_train_json(self):
         datas = json.load(open(self.train_json, "r"))
         linking_infos = self.get_train_schema_linking()
         db_id_to_table_json = dict()
